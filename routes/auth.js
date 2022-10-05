@@ -2,7 +2,15 @@ var express = require('express');
 var router = express.Router();
 var template = require('../lib/template.js');
 const JSONdb = require('simple-json-db');
-const db = new JSONdb('db.json');
+const db = new JSONdb('./db_store/users.json');
+const { v4 } = require('uuid');
+
+
+const uuid = () => {
+  const tokens = v4().split('-')
+  return tokens[2] + tokens[1] + tokens[0] + tokens[3] + tokens[4];
+}
+
 
 
 module.exports = function (passport) {
@@ -71,13 +79,22 @@ module.exports = function (passport) {
     var pwd2 = post.pwd2;
     var displayName = post.displayName;
 
-    const user = {
-      email: email,
-      pwd: pwd,
-      displayName: displayName
+    if (pwd !== pwd2) {
+      request.flash('error', 'Password must same!');
+      response.redirect("/auth/register");
+
+    } else {
+      const id = "users_" + uuid();
+      const user = {
+        id: id,
+        email: email,
+        pwd: pwd,
+        displayName: displayName
+      }
+
+      db.set(id, user);
+      response.redirect("/");
     }
-    db.set("user", user);
-    response.redirect("/");
 
   });
 
