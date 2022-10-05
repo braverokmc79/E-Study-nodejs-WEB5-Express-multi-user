@@ -1,8 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var template = require('../lib/template.js');
-const JSONdb = require('simple-json-db');
-const db = new JSONdb('./db_store/users.json');
+const db = require("../lib/dbUser");
 const { v4 } = require('uuid');
 
 
@@ -93,7 +92,11 @@ module.exports = function (passport) {
       }
 
       db.set(id, user);
-      response.redirect("/");
+      //passport login 적용
+      request.login(user, function (err) {
+        return response.redirect("/");
+      })
+
     }
 
   });
