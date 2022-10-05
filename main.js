@@ -37,7 +37,6 @@ var authRouter = require('./routes/auth')(passport);
 
 
 
-
 app.use('/', indexRouter);
 app.use('/topic', topicRouter);
 app.use('/auth', authRouter);
