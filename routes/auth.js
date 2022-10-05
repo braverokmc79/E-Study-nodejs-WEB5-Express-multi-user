@@ -91,7 +91,7 @@ module.exports = function (passport) {
         displayName: displayName
       }
 
-      db.set(id, user);
+      db.set(email, user);
       //passport login 적용
       request.login(user, function (err) {
         return response.redirect("/");
