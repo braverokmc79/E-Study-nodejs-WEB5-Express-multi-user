@@ -24,12 +24,12 @@ app.use(flash());
 
 var passport = require('./lib/passport')(app);
 
-app.get('*', function (request, response, next) {
-  fs.readdir('./data', function (error, filelist) {
-    request.list = filelist;
-    next();
-  });
-});
+// app.get('*', function (request, response, next) {
+//   fs.readdir('./data', function (error, filelist) {
+//     request.list = filelist;
+//     next();
+//   });
+// });
 
 var indexRouter = require('./routes/index');
 var topicRouter = require('./routes/topic');

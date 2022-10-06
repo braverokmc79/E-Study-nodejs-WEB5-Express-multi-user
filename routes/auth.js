@@ -1,14 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var template = require('../lib/template.js');
-const db = require("../lib/dbUser");
-const { v4 } = require('uuid');
-
-
-const uuid = () => {
-  const tokens = v4().split('-')
-  return tokens[2] + tokens[1] + tokens[0] + tokens[3] + tokens[4];
-}
+const db = require("../lib/db");
 
 
 
@@ -22,7 +15,7 @@ module.exports = function (passport) {
       feedback = fmsg.error[0];
     }
     var title = 'WEB - login';
-    var list = template.list(request.list);
+    var list = template.list();
     var html = template.HTML(title, list, `
       <div style="color:red;">${feedback}</div>
       <form action="/auth/login_process" method="post">
@@ -54,7 +47,7 @@ module.exports = function (passport) {
       feedback = fmsg.error[0];
     }
     var title = 'WEB - register';
-    var list = template.list(request.list);
+    var list = template.list();
     var html = template.HTML(title, list, `
       <div style="color:red;">${feedback}</div>
       <form action="/auth/register_process" method="post">
@@ -83,7 +76,15 @@ module.exports = function (passport) {
       response.redirect("/auth/register");
 
     } else {
-      const id = "users_" + uuid();
+
+      const getUser = db.users.get(email);
+      if (getUser !== undefined) {
+        console.log("이미 등록 처리된 이메일 입니다.");
+        request.flash('error', '이미 등록 처리된 이메일 입니다.');
+        return response.redirect("/auth/register");
+      }
+
+      const id = "user_" + db.uuid();
       const user = {
         id: id,
         email: email,
@@ -91,7 +92,7 @@ module.exports = function (passport) {
         displayName: displayName
       }
 
-      db.set(email, user);
+      db.users.set(email, user);
       //passport login 적용
       request.login(user, function (err) {
         return response.redirect("/");
