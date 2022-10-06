@@ -68,7 +68,7 @@ router.get('/update/:pageId', function (request, response) {
         <form action="/topic/update_process" method="post">
           <input type="hidden" name="id" value="${topic.id}">
           <p><input type="text" name="title" placeholder="title" value="${title}"></p>
-          <p><input type="text" name="user_id" placeholder="title" value="${topic.user_id}"></p>
+          <p><input type="hidden" name="user_id" placeholder="title" value="${topic.user_id}"></p>
           <p>
             <textarea name="description" placeholder="description">${description}</textarea>
           </p>
@@ -118,12 +118,16 @@ router.post('/delete_process', function (request, response) {
     response.redirect('/');
     return false;
   }
-  var post = request.body;
-  var id = post.id;
-  var filteredId = path.parse(id).base;
-  fs.unlink(`data/${filteredId}`, function (error) {
-    response.redirect('/');
-  });
+  const post = request.body;
+  const id = post.id;
+
+  const topic = db.topics.get(id);
+
+  if (topic.user_id === request.user.email) {
+    db.topics.delete(id);
+  }
+
+  return response.redirect("/");
 });
 
 router.get('/:pageId', function (request, response, next) {
@@ -149,7 +153,7 @@ router.get('/:pageId', function (request, response, next) {
       ` <a href="/topic/create">create</a>
             <a href="/topic/update/${topic.id}">update</a>
             <form action="/topic/delete_process" method="post">
-              <input type="hidden" name="id" value="${topic.id}">
+              <input type="hidden" name="id" value="${topic.id}">              
               <input type="submit" value="delete">
             </form>`,
       auth.statusUI(request, response)
