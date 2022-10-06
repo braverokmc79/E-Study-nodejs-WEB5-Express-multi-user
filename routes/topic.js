@@ -54,15 +54,21 @@ router.get('/update/:pageId', function (request, response) {
     response.redirect('/');
     return false;
   }
-  var filteredId = path.parse(request.params.pageId).base;
-  fs.readFile(`data/${filteredId}`, 'utf8', function (err, description) {
-    var title = request.params.pageId;
-    var list = template.list();
-    var html = template.HTML(title, list,
-      `
+
+  var topic = db.topics.get(request.params.pageId);
+  if (topic.user_id !== request.user.email) {
+    return response.redirect("/");
+  }
+
+  var title = topic.title;
+  var description = topic.description;
+  var list = template.list();
+  var html = template.HTML(title, list,
+    `
         <form action="/topic/update_process" method="post">
-          <input type="hidden" name="id" value="${title}">
+          <input type="hidden" name="id" value="${topic.id}">
           <p><input type="text" name="title" placeholder="title" value="${title}"></p>
+          <p><input type="text" name="user_id" placeholder="title" value="${topic.user_id}"></p>
           <p>
             <textarea name="description" placeholder="description">${description}</textarea>
           </p>
@@ -71,11 +77,11 @@ router.get('/update/:pageId', function (request, response) {
           </p>
         </form>
         `,
-      `<a href="/topic/create">create</a> <a href="/topic/update/${title}">update</a>`,
-      auth.statusUI(request, response)
-    );
-    response.send(html);
-  });
+    `<a href="/topic/create">create</a> <a href="/topic/update/${topic.id}">update</a>`,
+    auth.statusUI(request, response)
+  );
+  response.send(html);
+
 });
 
 router.post('/update_process', function (request, response) {
@@ -87,11 +93,24 @@ router.post('/update_process', function (request, response) {
   var id = post.id;
   var title = post.title;
   var description = post.description;
-  fs.rename(`data/${id}`, `data/${title}`, function (error) {
-    fs.writeFile(`data/${title}`, description, 'utf8', function (err) {
-      response.redirect(`/topic/${title}`);
-    })
-  });
+
+  const topic = {
+    id: id,
+    title: title,
+    description: description,
+    user_id: request.user.email
+  }
+
+
+  for (let item in db.topics.storage) {
+    console.log("imte ", item);
+    if (item === id) {
+      db.topics.delete(id);
+      db.topics.set(id, topic);
+    }
+  }
+  response.redirect(`/topic/${id}`);
+
 });
 
 router.post('/delete_process', function (request, response) {
@@ -109,6 +128,8 @@ router.post('/delete_process', function (request, response) {
 
 router.get('/:pageId', function (request, response, next) {
   const topic = db.topics.get(request.params.pageId);
+
+  console.log(" :pageId : ", topic);
   const user = db.users.get(topic.user_id);
 
   if (topic) {
@@ -126,9 +147,9 @@ router.get('/:pageId', function (request, response, next) {
         <p>by ${user.displayName}</p>
       `,
       ` <a href="/topic/create">create</a>
-            <a href="/topic/update/${sanitizedTitle}">update</a>
+            <a href="/topic/update/${topic.id}">update</a>
             <form action="/topic/delete_process" method="post">
-              <input type="hidden" name="id" value="${sanitizedTitle}">
+              <input type="hidden" name="id" value="${topic.id}">
               <input type="submit" value="delete">
             </form>`,
       auth.statusUI(request, response)
