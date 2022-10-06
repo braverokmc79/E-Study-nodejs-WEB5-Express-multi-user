@@ -83,20 +83,27 @@ module.exports = function (passport) {
         request.flash('error', '이미 등록 처리된 이메일 입니다.');
         return response.redirect("/auth/register");
       }
-
       const id = "user_" + db.uuid();
-      const user = {
-        id: id,
-        email: email,
-        pwd: pwd,
-        displayName: displayName
-      }
 
-      db.users.set(email, user);
-      //passport login 적용
-      request.login(user, function (err) {
-        return response.redirect("/");
-      })
+      const bcrypt = require('bcrypt');
+      const saltRounds = 10;
+
+      bcrypt.hash(pwd, saltRounds, function (err, hash) {
+        console.log("hash : ", hash);
+        const user = {
+          id: id,
+          email: email,
+          pwd: hash,
+          displayName: displayName
+        }
+        db.users.set(email, user);
+
+        //passport login 적용
+        request.login(user, function (err) {
+          return response.redirect("/");
+        })
+
+      });
 
     }
 

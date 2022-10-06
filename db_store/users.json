@@ -10,5 +10,17 @@
         "email": "test1@gmail.com",
         "pwd": "1111",
         "displayName": "test1"
+    },
+    "test2@gmail.com": {
+        "id": "user_458a2f417a87e9aaa8e1557eeacde4ef",
+        "email": "test2@gmail.com",
+        "pwd": "$2b$10$rpI7FQSIjmZnIsI.QF4R1uO3xCkgnFnRbnczFubrEmvNj6TgKYr2.",
+        "displayName": "test2"
+    },
+    "test3@gmail.com": {
+        "id": "user_4e7e41b2d791636c92433b0ff590edd4",
+        "email": "test3@gmail.com",
+        "pwd": "$2b$10$iTakx1DzVIcqUyDhWfftieF//riKpfQIIpg2FiwFbhl0cU/Fo/mJe",
+        "displayName": "test3"
     }
 }
